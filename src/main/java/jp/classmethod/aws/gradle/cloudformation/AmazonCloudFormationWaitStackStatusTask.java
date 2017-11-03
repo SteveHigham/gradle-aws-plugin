@@ -79,7 +79,10 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	@Getter
 	@Setter
 	private List<String> printedEvents;
-	
+
+        @Getter
+        @Setter
+	private Stack stack;
 	
 	public AmazonCloudFormationWaitStackStatusTask() {
 		setDescription("Wait cfn stack for specific status.");
@@ -114,7 +117,7 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 				// Get stack info
 				DescribeStacksRequest describeStackRequest = new DescribeStacksRequest().withStackName(stackName);
 				DescribeStacksResult describeStackResult = cfn.describeStacks(describeStackRequest);
-				Stack stack = describeStackResult.getStacks().get(0);
+				stack = describeStackResult.getStacks().get(0);
 				if (stack == null) {
 					throw new GradleException("stack " + stackName + " is not exists");
 				}
