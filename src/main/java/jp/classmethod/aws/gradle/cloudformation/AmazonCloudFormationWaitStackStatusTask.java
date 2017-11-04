@@ -79,10 +79,11 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	@Getter
 	@Setter
 	private List<String> printedEvents;
-
-        @Getter
-        @Setter
+	
+	@Getter
+	@Setter
 	private Stack stack;
+	
 	
 	public AmazonCloudFormationWaitStackStatusTask() {
 		setDescription("Wait cfn stack for specific status.");
