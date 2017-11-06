@@ -24,14 +24,14 @@ import com.amazonaws.services.opsworkscm.AWSOpsWorksCMClient;
 
 import jp.classmethod.aws.gradle.common.BaseRegionAwarePluginExtension;
 
-public class AmazonOpsWorksCmPluginExtension extends BaseRegionAwarePluginExtension<AWSOpsWorksCMClient> {
+public class AwsOpsWorksCmPluginExtension extends BaseRegionAwarePluginExtension<AWSOpsWorksCMClient> {
 	
-	private static Logger logger = LoggerFactory.getLogger(AmazonOpsWorksCmPluginExtension.class);
+	private static Logger logger = LoggerFactory.getLogger(AwsOpsWorksCmPluginExtension.class);
 	
 	public static final String NAME = "opsworkscm";
 	
 	
-	public AmazonOpsWorksCmPluginExtension(Project project) {
+	public AwsOpsWorksCmPluginExtension(Project project) {
 		super(project, AWSOpsWorksCMClient.class);
 	}
 }

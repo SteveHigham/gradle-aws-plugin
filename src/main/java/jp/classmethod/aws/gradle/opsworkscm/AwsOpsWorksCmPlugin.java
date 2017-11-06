@@ -20,22 +20,23 @@ import org.gradle.api.Project;
 
 import jp.classmethod.aws.gradle.AwsPlugin;
 
-public class AmazonOpsWorksCmPlugin implements Plugin<Project> {
+public class AwsOpsWorksCmPlugin implements Plugin<Project> {
 	
 	@Override
 	public void apply(Project project) {
 		project.getPluginManager().apply(AwsPlugin.class);
-		//project.getPluginManager().apply(AmazonS3Plugin.class);
-		project.getExtensions().create(AmazonOpsWorksCmPluginExtension.NAME,
-				AmazonOpsWorksCmPluginExtension.class,
+		project.getExtensions().create(AwsOpsWorksCmPluginExtension.NAME,
+				AwsOpsWorksCmPluginExtension.class,
 				project);
 		applyTasks(project);
 	}
 	
 	private void applyTasks(Project project) { // NOPMD
 		/*
-		AmazonOpsWorksCmPluginExtension cfnExt =
+		AmazonOpsWorksCmPluginExtension ext =
 				project.getExtensions().findByType(AmazonOpsWorksCmPluginExtension.class);
+		AwsOpsWorksCmCreateServerTask awsOpsWorksCmCreateServerTask =
+		project.getTasks().create("awsOpsWorksCm")
 		 */
 	}
 }
