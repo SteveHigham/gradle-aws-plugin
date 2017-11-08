@@ -15,6 +15,9 @@
  */
 package jp.classmethod.aws.gradle.opsworkscm;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +32,14 @@ public class AwsOpsWorksCmPluginExtension extends BaseRegionAwarePluginExtension
 	private static Logger logger = LoggerFactory.getLogger(AwsOpsWorksCmPluginExtension.class);
 	
 	public static final String NAME = "opsworkscm";
+	
+	@Getter
+	@Setter
+	private String serverName;
+	
+	@Getter
+	@Setter
+	private String serviceRoleArn;
 	
 	
 	public AwsOpsWorksCmPluginExtension(Project project) {

@@ -15,12 +15,19 @@
  */
 package jp.classmethod.aws.gradle.opsworkscm;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 import jp.classmethod.aws.gradle.AwsPlugin;
 
 public class AwsOpsWorksCmPlugin implements Plugin<Project> {
+	
+	private static Logger logger =
+			LoggerFactory.getLogger(AwsOpsWorksCmPlugin.class);
+	
 	
 	@Override
 	public void apply(Project project) {
@@ -32,11 +39,16 @@ public class AwsOpsWorksCmPlugin implements Plugin<Project> {
 	}
 	
 	private void applyTasks(Project project) { // NOPMD
-		/*
-		AmazonOpsWorksCmPluginExtension ext =
-				project.getExtensions().findByType(AmazonOpsWorksCmPluginExtension.class);
-		AwsOpsWorksCmCreateServerTask awsOpsWorksCmCreateServerTask =
-		project.getTasks().create("awsOpsWorksCm")
-		 */
+		logger.info("applyTasks");
+		AwsOpsWorksCmPluginExtension ext =
+				project.getExtensions().findByType(AwsOpsWorksCmPluginExtension.class);
+		
+		//AwsOpsWorksCmCreateServerTask awsOpsWorksCmCreateServerTask =
+		project.getTasks().create("awsOpsWorksCmCreateServerTask", AwsOpsWorksCmCreateServerTask.class, task -> {
+			logger.info("ConventionMapping serverName to: " + ext.getServerName());
+			task.conventionMapping("serverName", () -> ext.getServerName());
+			logger.info("ConventionMapping serviceRoleArn to: " + ext.getServiceRoleArn());
+			task.conventionMapping("serviceRoleArn", () -> ext.getServiceRoleArn());
+		});
 	}
 }
