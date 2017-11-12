@@ -21,6 +21,7 @@ import java.util.Collection;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
@@ -46,15 +47,15 @@ public class AwsOpsWorksCmCreateServerTask extends ConventionTask {
 	
 	@Getter
 	@Setter
-	private Boolean disableAutomatedBackup;
+	private Boolean disableAutomatedBackup = true;
 	
 	@Getter
 	@Setter
-	private String engine;
+	private String engine = "Chef";
 	
 	@Getter
 	@Setter
-	private String engineModel;
+	private String engineModel = "Single";
 	
 	@Getter
 	@Setter
@@ -104,6 +105,16 @@ public class AwsOpsWorksCmCreateServerTask extends ConventionTask {
 	
 	public void addSubnetId(String id) {
 		subnetIds.add(id);
+	}
+	
+	public void setBackupWindow(String window) {
+		if (StringUtils.isBlank(window)) {
+			disableAutomatedBackup = true;
+			preferredBackupWindow = null;
+		} else {
+			disableAutomatedBackup = false;
+			preferredBackupWindow = window;
+		}
 	}
 	
 	@TaskAction
