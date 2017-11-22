@@ -15,7 +15,9 @@
  */
 package jp.classmethod.aws.gradle.ec2;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import lombok.Getter;
@@ -29,6 +31,7 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Instance;
 
 public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
@@ -36,6 +39,10 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 	@Getter
 	@Setter
 	private String instanceId;
+	
+	@Getter
+	@Setter
+	private Collection<Filter> filters = new ArrayList<Filter>();
 	
 	@Getter
 	@Setter
@@ -49,7 +56,8 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 	private List<String> waitStatuses = Arrays.asList(
 			"pending",
 			"shutting-down",
-			"stopping");
+			"stopping",
+			"not found");
 	
 	@Getter
 	@Setter
@@ -60,7 +68,7 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 	private int loopWait = 10; // sec
 	
 	@Getter
-	private boolean found;
+	private Instance instance;
 	
 	@Getter
 	private String lastStatus;
@@ -71,18 +79,22 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 		setGroup("AWS");
 	}
 	
+	public void addFilter(String name, String value) {
+		List<String> values = new ArrayList<String>();
+		values.add(value);
+		addFilter(name, values);
+	}
+	
+	public void addFilter(String name, List<String> values) {
+		filters.add(new Filter(name, values));
+	}
+	
 	@TaskAction
 	public void waitInstanceForStatus() { // NOPMD
+		
 		// to enable conventionMappings feature
-		String instanceId = getInstanceId();
-		List<String> successStatuses = getSuccessStatuses();
-		List<String> waitStatuses = getWaitStatuses();
 		int loopTimeout = getLoopTimeout();
 		int loopWait = getLoopWait();
-		
-		if (instanceId == null) {
-			throw new GradleException("instanceId is not specified");
-		}
 		
 		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
 		AmazonEC2 ec2 = ext.getClient();
@@ -92,38 +104,57 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 			if (System.currentTimeMillis() > start + (loopTimeout * 1000)) {
 				throw new GradleException("Timeout");
 			}
+			checkCurrentStatus(ec2);
+			if (instance != null) {
+				break;
+			}
 			try {
-				DescribeInstancesResult dir = ec2.describeInstances(new DescribeInstancesRequest()
-					.withInstanceIds(instanceId));
-				Instance instance = dir.getReservations().get(0).getInstances().get(0);
-				if (instance == null) {
-					throw new GradleException(instanceId + " is not exists");
-				}
-				
-				found = true;
-				lastStatus = instance.getState().getName();
-				if (successStatuses.contains(lastStatus)) {
-					getLogger().info("Status of instance {} is now {}.", instanceId, lastStatus);
-					break;
-				} else if (waitStatuses.contains(lastStatus)) {
-					getLogger().info("Status of instance {} is {}...", instanceId, lastStatus);
-					try {
-						Thread.sleep(loopWait * 1000);
-					} catch (InterruptedException e) {
-						throw new GradleException("Sleep interrupted", e);
-					}
-				} else {
-					// fail when current status is not waitStatuses or successStatuses
-					throw new GradleException(
-							"Status of " + instanceId + " is " + lastStatus + ".  It seems to be failed.");
-				}
-			} catch (AmazonServiceException e) {
-				if (found) {
-					break;
-				} else {
-					throw new GradleException("Fail to describe instance: " + instanceId, e);
-				}
+				Thread.sleep(loopWait * 1000);
+			} catch (InterruptedException e) {
+				throw new GradleException("Sleep interrupted", e);
 			}
 		}
 	}
+	
+	void checkCurrentStatus(AmazonEC2 ec2) {
+		// to enable conventionMappings feature
+		String instanceId = getInstanceId();
+		Collection<Filter> filters = getFilters();
+		List<String> successStatuses = getSuccessStatuses();
+		List<String> waitStatuses = getWaitStatuses();
+		
+		try {
+			DescribeInstancesResult dir = ec2.describeInstances(new DescribeInstancesRequest()
+				.withInstanceIds(instanceId)
+				.withFilters(filters));
+			switch (dir.getReservations().size()) {
+				case 0:
+					if (instanceId != null) {
+						throw new GradleException(instanceId + " does not exist");
+					}
+					break;
+				case 1:
+					instance = dir.getReservations().get(0).getInstances().get(0);
+					lastStatus = instance.getState().getName();
+					if (successStatuses.contains(lastStatus)) {
+						getLogger().info("Status of instance {} is now {}.", instanceId, lastStatus);
+						setInstanceId(instance.getInstanceId());
+					} else if (waitStatuses.contains(lastStatus)) {
+						getLogger().info("Status of instance {} is {}...", instanceId, lastStatus);
+					} else {
+						// fail when current status is not waitStatuses or successStatuses
+						throw new GradleException(
+								"Status of instance is " + lastStatus + ".  It seems to be failed.");
+					}
+					break;
+				default:
+					throw new GradleException("Query returned more than one instance");
+			}
+		} catch (AmazonServiceException e) {
+			if (instance == null) {
+				throw new GradleException("Fail to describe instance: " + instanceId, e);
+			}
+		}
+	}
+	
 }
