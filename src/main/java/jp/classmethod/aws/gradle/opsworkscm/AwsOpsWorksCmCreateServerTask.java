@@ -28,6 +28,7 @@ import org.gradle.api.tasks.TaskAction;
 import com.amazonaws.services.opsworkscm.AWSOpsWorksCM;
 import com.amazonaws.services.opsworkscm.model.CreateServerRequest;
 import com.amazonaws.services.opsworkscm.model.CreateServerResult;
+import com.amazonaws.services.opsworkscm.model.EngineAttribute;
 import com.amazonaws.services.opsworkscm.model.Server;
 
 public class AwsOpsWorksCmCreateServerTask extends ConventionTask {
@@ -52,6 +53,11 @@ public class AwsOpsWorksCmCreateServerTask extends ConventionTask {
 	@Getter
 	@Setter
 	private String engine = "Chef";
+	
+	@Getter
+	@Setter
+	private Collection<EngineAttribute> engineAttributes =
+			new ArrayList<EngineAttribute>();
 	
 	@Getter
 	@Setter
@@ -117,6 +123,13 @@ public class AwsOpsWorksCmCreateServerTask extends ConventionTask {
 		}
 	}
 	
+	public void addEngineAttribute(String name, String value) {
+		EngineAttribute attr = new EngineAttribute()
+			.withName(name)
+			.withValue(value);
+		engineAttributes.add(attr);
+	}
+	
 	@TaskAction
 	public void createServer() {
 		
@@ -129,6 +142,7 @@ public class AwsOpsWorksCmCreateServerTask extends ConventionTask {
 			.withBackupRetentionCount(getBackupRetentionCount())
 			.withDisableAutomatedBackup(getDisableAutomatedBackup())
 			.withEngine(getEngine())
+			.withEngineAttributes(getEngineAttributes())
 			.withEngineModel(getEngineModel())
 			.withEngineVersion(getEngineVersion())
 			.withInstanceProfileArn(getInstanceProfileArn())
