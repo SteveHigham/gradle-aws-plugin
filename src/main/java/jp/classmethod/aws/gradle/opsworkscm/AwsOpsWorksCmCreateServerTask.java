@@ -38,67 +38,116 @@ public class AwsOpsWorksCmCreateServerTask extends ConventionTask {
 	@Setter
 	private Boolean associatePublicIpAddress;
 	 */
+	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private String backupId;
 	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private Integer backupRetentionCount;
 	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private Boolean disableAutomatedBackup = true;
 	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private String engine = "Chef";
 	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private Collection<EngineAttribute> engineAttributes =
 			new ArrayList<EngineAttribute>();
 	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private String engineModel = "Single";
 	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private String engineVersion;
 	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private String instanceProfileArn;
 	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private String instanceType;
 	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private String keyPair;
 	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private String preferredBackupWindow;
 	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private String preferredMaintenanceWindow;
 	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private String serverName;
 	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private String serviceRoleArn;
 	
+	/**
+	 * Public getter and setter
+	 */
 	@Getter
 	@Setter
 	private Collection<String> subnetIds = new ArrayList<String>();
 	
+	/**
+	 * Public getter
+	 */
 	@Getter
 	private Server server;
 	

@@ -188,7 +188,12 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 }
 
 javadoc {
-	failOnError = false
+  failOnError = false
+  options.memberLevel = JavadocMemberLevel.PRIVATE
+  options.links += [
+    file ('../aws-sdk-java/aws-java-sdk-opsworkscm/target/site/apidocs').absolutePath,
+    'https://docs.oracle.com/javase/8/docs/api'
+  ]
 }
 
 artifacts {
@@ -203,7 +208,7 @@ configurations {
 // ======== library versions ========
 ext {
 	lombokVersion = "1.16.2"
-	awsJavaSdkVersion = "1.11.86"
+	awsJavaSdkVersion = "1.11.257" // "1.11.86"
 	groovyVersion = "2.3.7"
 	junitVersion = "4.12"
 	hamcrestVersion = "1.3"
