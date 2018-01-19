@@ -260,7 +260,7 @@ apply from: "deploy/${group}.gradle"
 
 // ======== wrapper ========
 task wrapper(type: Wrapper) {
-	gradleVersion = "2.14"
+	gradleVersion = '4.4.1' //"2.14"
 }
 
 

@@ -91,6 +91,13 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	private List<String> stableStatuses = Arrays.asList(
 			"CREATE_COMPLETE", "ROLLBACK_COMPLETE", "UPDATE_COMPLETE", "UPDATE_ROLLBACK_COMPLETE");
 	
+	/**
+	 * For testing (mocking)
+	 */
+	@Getter
+	@Setter
+	AmazonCloudFormation client;
+	
 	
 	public AmazonCloudFormationMigrateStackTask() {
 		setDescription("Create / Migrate cfn stack.");
@@ -101,45 +108,17 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	public void createOrUpdateStack() throws InterruptedException, IOException {
 		// to enable conventionMappings feature
 		String stackName = getStackName();
-		String cfnTemplateUrl = getCfnTemplateUrl();
-		File cfnTemplateFile = getCfnTemplateFile();
-		List<String> stableStatuses = getStableStatuses();
+		AmazonCloudFormation client = getClient();
 		
 		if (stackName == null) {
 			throw new GradleException("stackName is not specified");
 		}
 		
-		AmazonCloudFormationPluginExtension ext =
-				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
-		AmazonCloudFormation cfn = ext.getClient();
-		
-		try {
-			DescribeStacksResult describeStackResult =
-					cfn.describeStacks(new DescribeStacksRequest().withStackName(stackName));
-			Stack stack = describeStackResult.getStacks().get(0);
-			if (stack.getStackStatus().equals("DELETE_COMPLETE")) {
-				getLogger().warn("deleted stack {} already exists", stackName);
-				deleteStack(cfn);
-				createStack(cfn);
-			} else if (stableStatuses.contains(stack.getStackStatus())) {
-				updateStack(cfn);
-			} else {
-				throw new GradleException("invalid status for update: " + stack.getStackStatus());
-			}
-		} catch (AmazonServiceException e) {
-			if (e.getMessage().contains("does not exist")) {
-				getLogger().warn("stack {} not found", stackName);
-				if (cfnTemplateUrl == null && cfnTemplateFile == null) {
-					getLogger().error("cfnTemplateUrl or cfnTemplateFile must be provided");
-					throw e;
-				}
-				createStack(cfn);
-			} else if (e.getMessage().contains("No updates are to be performed.")) {
-				getLogger().trace(e.getMessage());
-			} else {
-				throw e;
-			}
+		if (client == null) {
+			client = createClient();
 		}
+		
+		doTaskAction(client, stackName);
 	}
 	
 	private void updateStack(AmazonCloudFormation cfn) throws IOException {
@@ -262,4 +241,48 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		CreateStackResult createStackResult = cfn.createStack(req);
 		getLogger().info("create requested: {}", createStackResult.getStackId());
 	}
+	
+	AmazonCloudFormation createClient() {
+		AmazonCloudFormationPluginExtension ext =
+				getProject().getExtensions()
+					.getByType(AmazonCloudFormationPluginExtension.class);
+		return ext.getClient();
+		
+	}
+	
+	void doTaskAction(AmazonCloudFormation client, String stackName)
+			throws InterruptedException, IOException {
+		List<String> stableStatuses = getStableStatuses();
+		String cfnTemplateUrl = getCfnTemplateUrl();
+		File cfnTemplateFile = getCfnTemplateFile();
+		
+		try {
+			DescribeStacksResult describeStackResult =
+					client.describeStacks(new DescribeStacksRequest().withStackName(stackName));
+			Stack stack = describeStackResult.getStacks().get(0);
+			if (stack.getStackStatus().equals("DELETE_COMPLETE")) {
+				getLogger().warn("deleted stack {} already exists", stackName);
+				deleteStack(client);
+				createStack(client);
+			} else if (stableStatuses.contains(stack.getStackStatus())) {
+				updateStack(client);
+			} else {
+				throw new GradleException("invalid status for update: " + stack.getStackStatus());
+			}
+		} catch (AmazonServiceException e) {
+			if (e.getMessage().contains("does not exist")) {
+				getLogger().warn("stack {} not found", stackName);
+				if (cfnTemplateUrl == null && cfnTemplateFile == null) {
+					getLogger().error("cfnTemplateUrl or cfnTemplateFile must be provided");
+					throw e;
+				}
+				createStack(client);
+			} else if (e.getMessage().contains("No updates are to be performed.")) {
+				getLogger().trace(e.getMessage());
+			} else {
+				throw e;
+			}
+		}
+	}
+	
 }
