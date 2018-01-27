@@ -286,9 +286,11 @@ eclipse {
 		file {
 			// exclude jar entries from .classpath
 			whenMerged { classpath ->
+			  /*
 				classpath.configure classpath.entries.grep { entry ->
 					!(entry instanceof org.gradle.plugins.ide.eclipse.model.Library)
 				}
+				*/
 				classpath.entries.findAll {
 					it instanceof org.gradle.plugins.ide.eclipse.model.SourceFolder && it.path.startsWith("src/test/")
 				}*.output = "build/test-classes"

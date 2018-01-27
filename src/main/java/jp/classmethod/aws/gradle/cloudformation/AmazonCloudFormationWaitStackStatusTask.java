@@ -84,6 +84,13 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	@Setter
 	private Stack stack;
 	
+	/**
+	 * For testing (stubbing)
+	 */
+	@Getter
+	@Setter
+	AmazonCloudFormation client;
+	
 	
 	public AmazonCloudFormationWaitStackStatusTask() {
 		setDescription("Wait cfn stack for specific status.");
@@ -94,19 +101,28 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	public void waitStackForStatus() throws InterruptedException {
 		// to enable conventionMappings feature
 		String stackName = getStackName();
-		List<String> successStatuses = getSuccessStatuses();
-		List<String> waitStatuses = getWaitStatuses();
-		int loopTimeout = getLoopTimeout();
-		int loopWait = getLoopWait();
+		AmazonCloudFormation client = getClient();
 		
-		if (stackName == null) {
+		if (stackName == null && client == null) {
 			throw new GradleException("stackName is not specified");
 		}
 		
-		AmazonCloudFormationPluginExtension ext =
-				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
-		AmazonCloudFormation cfn = ext.getClient();
+		if (client == null) {
+			AmazonCloudFormationPluginExtension ext =
+					getProject().getExtensions()
+						.getByType(AmazonCloudFormationPluginExtension.class);
+			client = ext.getClient();
+		}
 		
+		doWaitLoop(client);
+	}
+	
+	void doWaitLoop(AmazonCloudFormation client) throws InterruptedException {
+		int loopTimeout = getLoopTimeout();
+		int loopWait = getLoopWait();
+		String stackName = getStackName();
+		List<String> successStatuses = getSuccessStatuses();
+		List<String> waitStatuses = getWaitStatuses();
 		long start = System.currentTimeMillis();
 		printedEvents = new LinkedList<String>();
 		
@@ -116,19 +132,25 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 			}
 			try {
 				// Get stack info
-				DescribeStacksRequest describeStackRequest = new DescribeStacksRequest().withStackName(stackName);
-				DescribeStacksResult describeStackResult = cfn.describeStacks(describeStackRequest);
+				DescribeStacksRequest describeStackRequest =
+						new DescribeStacksRequest().withStackName(stackName);
+				DescribeStacksResult describeStackResult =
+						client.describeStacks(describeStackRequest);
 				stack = describeStackResult.getStacks().get(0);
 				if (stack == null) {
-					throw new GradleException("stack " + stackName + " is not exists");
+					String msg = "stack " + stackName + " does not exist";
+					throw new GradleException(msg);
 				}
 				found = true;
 				lastStatus = stack.getStackStatus();
 				
 				// Get stack events info
-				DescribeStackEventsRequest request = new DescribeStackEventsRequest().withStackName(stackName);
-				DescribeStackEventsResult result = cfn.describeStackEvents(request);
-				List<StackEvent> stackEvents = new LinkedList<StackEvent>(result.getStackEvents());
+				DescribeStackEventsRequest request =
+						new DescribeStackEventsRequest().withStackName(stackName);
+				DescribeStackEventsResult result =
+						client.describeStackEvents(request);
+				List<StackEvent> stackEvents =
+						new LinkedList<StackEvent>(result.getStackEvents());
 				Collections.reverse(stackEvents);
 				
 				// Always output new events; might be the last time you can

@@ -92,7 +92,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			"CREATE_COMPLETE", "ROLLBACK_COMPLETE", "UPDATE_COMPLETE", "UPDATE_ROLLBACK_COMPLETE");
 	
 	/**
-	 * For testing (mocking)
+	 * For testing (stubbing)
 	 */
 	@Getter
 	@Setter

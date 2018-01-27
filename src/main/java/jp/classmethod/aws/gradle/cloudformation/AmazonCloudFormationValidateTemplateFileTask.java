@@ -27,11 +27,20 @@ import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
+import com.amazonaws.services.cloudformation.AmazonCloudFormation;
+
 public class AmazonCloudFormationValidateTemplateFileTask extends ConventionTask {
 	
 	@Getter
 	@Setter
 	private File cfnTemplateFile;
+	
+	/**
+	 * For testing (stubbing)
+	 */
+	@Getter
+	@Setter
+	AmazonCloudFormation client;
 	
 	
 	public AmazonCloudFormationValidateTemplateFileTask() {
@@ -43,15 +52,18 @@ public class AmazonCloudFormationValidateTemplateFileTask extends ConventionTask
 	public void validateTemplateFile() throws InterruptedException, IOException {
 		// to enable conventionMappings feature
 		File cfnTemplateFile = getCfnTemplateFile();
-		if (cfnTemplateFile == null || !cfnTemplateFile.exists()) {
-			throw new GradleException("No cloudformation template defined");
-		}
-		
-		AmazonCloudFormationPluginExtension ext =
-				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
-		
-		if (!isValidTemplateFile(ext, cfnTemplateFile)) {
-			throw new GradleException("cloudFormation template has invalid format");
+		AmazonCloudFormation client = getClient();
+		if (client == null) {
+			if (cfnTemplateFile == null || !cfnTemplateFile.exists()) {
+				throw new GradleException("No cloudformation template defined");
+			}
+			
+			AmazonCloudFormationPluginExtension ext =
+					getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
+			
+			if (!isValidTemplateFile(ext, cfnTemplateFile)) {
+				throw new GradleException("cloudFormation template has invalid format");
+			}
 		}
 	}
 	
