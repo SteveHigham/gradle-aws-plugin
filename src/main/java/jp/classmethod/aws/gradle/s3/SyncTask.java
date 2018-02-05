@@ -84,6 +84,13 @@ public class SyncTask extends ConventionTask {
 	@Getter
 	private CannedAccessControlList acl;
 	
+	/**
+	 * Externally exposed client for stubbing
+	 */
+	@Getter
+	@Setter
+	private AmazonS3 client;
+	
 	
 	public void setAcl(String aclName) {
 		acl = CannedAccessControlList.valueOf(aclName);
@@ -95,6 +102,7 @@ public class SyncTask extends ConventionTask {
 		String bucketName = getBucketName();
 		String prefix = getPrefix();
 		File source = getSource();
+		AmazonS3 s3 = getClient();
 		
 		if (bucketName == null) {
 			throw new GradleException("bucketName is not specified");
@@ -108,12 +116,15 @@ public class SyncTask extends ConventionTask {
 		
 		prefix = prefix.startsWith("/") ? prefix.substring(1) : prefix;
 		
-		AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
-		AmazonS3 s3 = ext.getClient();
-		
-		upload(s3, prefix);
-		if (isDelete()) {
-			deleteAbsent(s3, prefix);
+		if (s3 == null) {
+			AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
+			s3 = ext.getClient();
+			
+			// Only upload if no client provided - ignore if stubbed out
+			upload(s3, prefix);
+			if (isDelete()) {
+				deleteAbsent(s3, prefix);
+			}
 		}
 	}
 	
