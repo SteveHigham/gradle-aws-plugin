@@ -31,6 +31,13 @@ public class AmazonCloudFormationDeleteStackTask extends ConventionTask {
 	@Setter
 	private String stackName;
 	
+	/**
+	 * For testing (stubbing)
+	 */
+	@Getter
+	@Setter
+	AmazonCloudFormation client;
+	
 	
 	public AmazonCloudFormationDeleteStackTask() {
 		setDescription("Delete cfn stack.");
@@ -41,14 +48,17 @@ public class AmazonCloudFormationDeleteStackTask extends ConventionTask {
 	public void deleteStack() {
 		// to enable conventionMappings feature
 		String stackName = getStackName();
+		AmazonCloudFormation cfn = getClient();
 		
 		if (stackName == null) {
 			throw new GradleException("stackName is not specified");
 		}
 		
-		AmazonCloudFormationPluginExtension ext =
-				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
-		AmazonCloudFormation cfn = ext.getClient();
+		if (cfn == null) {
+			AmazonCloudFormationPluginExtension ext =
+					getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
+			cfn = ext.getClient();
+		}
 		
 		cfn.deleteStack(new DeleteStackRequest().withStackName(stackName));
 		getLogger().info("delete stack " + stackName + " requested");

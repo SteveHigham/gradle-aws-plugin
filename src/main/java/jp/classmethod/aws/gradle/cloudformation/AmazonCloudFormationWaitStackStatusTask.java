@@ -27,8 +27,8 @@ import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.TaskAction;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
+import com.amazonaws.services.cloudformation.model.AmazonCloudFormationException;
 import com.amazonaws.services.cloudformation.model.DescribeStackEventsRequest;
 import com.amazonaws.services.cloudformation.model.DescribeStackEventsResult;
 import com.amazonaws.services.cloudformation.model.DescribeStacksRequest;
@@ -67,10 +67,6 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	@Getter
 	@Setter
 	private int loopWait = 10; // sec
-	
-	@Getter
-	@Setter
-	private boolean found;
 	
 	@Getter
 	@Setter
@@ -126,6 +122,7 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 		long start = System.currentTimeMillis();
 		printedEvents = new LinkedList<String>();
 		
+		List<StackEvent> stackEvents = null;
 		while (true) {
 			if (System.currentTimeMillis() > start + (loopTimeout * 1000)) {
 				throw new GradleException("Timeout");
@@ -136,35 +133,33 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 						new DescribeStacksRequest().withStackName(stackName);
 				DescribeStacksResult describeStackResult =
 						client.describeStacks(describeStackRequest);
+				// If stack doesn't exist we get an exception
 				stack = describeStackResult.getStacks().get(0);
-				if (stack == null) {
-					String msg = "stack " + stackName + " does not exist";
-					throw new GradleException(msg);
-				}
-				found = true;
 				lastStatus = stack.getStackStatus();
 				
 				// Get stack events info
 				DescribeStackEventsRequest request =
 						new DescribeStackEventsRequest().withStackName(stackName);
+				// We generally get an exception here once the deletion has completed
 				DescribeStackEventsResult result =
 						client.describeStackEvents(request);
-				List<StackEvent> stackEvents =
-						new LinkedList<StackEvent>(result.getStackEvents());
+				stackEvents = new LinkedList<StackEvent>(result.getStackEvents());
 				Collections.reverse(stackEvents);
 				
 				// Always output new events; might be the last time you can
-				printEvents(stackEvents);
+				//printEvents(stackEvents);
 				
-				// If completed successfully, output status and outputs of stack, then break out of while loop
+				// If completed successfully, output status and outputs of 
+				// stack, then break out of while loop
 				if (successStatuses.contains(lastStatus)) {
-					getLogger().info("Status of stack {} is now {}.", stackName, lastStatus);
-					printOutputs(stack);
+					getLogger().debug("Status of stack {} is now {} - exiting loop.",
+							stackName, lastStatus);
+					//printOutputs(stack);
 					break;
 					
 					// Else if still going, sleep some then loop again
 				} else if (waitStatuses.contains(lastStatus)) {
-					getLogger().info("Status of stack {} is {}...", stackName, lastStatus);
+					getLogger().debug("Status of stack {} is {}...", stackName, lastStatus);
 					Thread.sleep(loopWait * 1000);
 					
 					// Else, it must have failed, so get out of while loop
@@ -172,14 +167,21 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 					throw new GradleException(
 							"Status of stack " + stackName + " is " + lastStatus + ".  It seems to be failed.");
 				}
-			} catch (AmazonServiceException e) {
-				if (found) {
+			} catch (AmazonCloudFormationException e) {
+				if (e.getMessage().indexOf("does not exist") >= 0) {
+					lastStatus = "DELETE_COMPLETE";
+					//printEvents(stackEvents);
+					//printOutputs(stack);
 					break;
 				} else {
-					throw new GradleException("Fail to describe stack: " + stackName, e);
+					throw new GradleException("Unexpected exception for stack: " + stackName, e);
 				}
 			}
 		}
+		if (stackEvents != null) {
+			printEvents(stackEvents);
+		}
+		printOutputs(stack);
 	}
 	
 	private void printEvents(List<StackEvent> stackEvents) {
