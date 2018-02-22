@@ -181,7 +181,9 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 		if (stackEvents != null) {
 			printEvents(stackEvents);
 		}
-		printOutputs(stack);
+		if (stack != null) {
+			printOutputs(stack);
+		}
 	}
 	
 	private void printEvents(List<StackEvent> stackEvents) {

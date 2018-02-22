@@ -17,6 +17,7 @@ package jp.classmethod.aws.gradle.common;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.gradle.api.Project;
 
@@ -24,6 +25,7 @@ import com.amazonaws.AmazonWebServiceClient;
 
 import jp.classmethod.aws.gradle.AwsPluginExtension;
 
+@Log4j2
 public class BaseRegionAwarePluginExtension<T extends AmazonWebServiceClient>extends BasePluginExtension<T> {
 	
 	@Getter
@@ -41,6 +43,7 @@ public class BaseRegionAwarePluginExtension<T extends AmazonWebServiceClient>ext
 		T client = super.initClient();
 		if (isRegionRequired() || region != null) {
 			client.setRegion(aws.getActiveRegion(region));
+			log.info("Region set to: {}", region);
 		}
 		
 		return client;

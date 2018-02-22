@@ -33,10 +33,20 @@ public class AmazonS3PluginExtension extends BaseRegionAwarePluginExtension<Amaz
 	@Setter
 	private Integer maxErrorRetry = -1;
 	
+	@Setter
+	private boolean regionRequired = false;
+	
 	
 	public AmazonS3PluginExtension(Project project) {
 		super(project, AmazonS3Client.class);
 	}
+	
+	/*
+	public void Region(String region) {
+		AwsPluginExtension aws = getProject().getExtensions().getByType(AwsPluginExtension.class);
+		setRegion(aws.getActiveRegion(region));		
+	}
+	 */
 	
 	@Override
 	protected ClientConfiguration buildClientConfiguration() {
@@ -50,6 +60,6 @@ public class AmazonS3PluginExtension extends BaseRegionAwarePluginExtension<Amaz
 	
 	@Override
 	protected boolean isRegionRequired() {
-		return false;
+		return regionRequired;
 	}
 }

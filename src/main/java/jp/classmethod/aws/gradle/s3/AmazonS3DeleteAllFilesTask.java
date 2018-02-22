@@ -64,6 +64,7 @@ public class AmazonS3DeleteAllFilesTask extends ConventionTask {
 		
 		List<S3ObjectSummary> objectSummaries;
 		while ((objectSummaries = s3.listObjects(bucketName, prefix).getObjectSummaries()).isEmpty() == false) {
+			//s3.setRegion(ext.getRegion());
 			objectSummaries.forEach(os -> {
 				getLogger().info("  Deleting... s3://{}/{}", bucketName, os.getKey());
 				s3.deleteObject(bucketName, os.getKey());
