@@ -141,6 +141,7 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 						setInstanceId(instance.getInstanceId());
 					} else if (waitStatuses.contains(lastStatus)) {
 						getLogger().info("Status of instance {} is {}...", instanceId, lastStatus);
+						instance = null;
 					} else {
 						// fail when current status is not waitStatuses or successStatuses
 						throw new GradleException(
