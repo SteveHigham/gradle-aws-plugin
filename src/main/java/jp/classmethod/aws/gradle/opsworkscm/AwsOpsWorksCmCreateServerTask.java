@@ -39,123 +39,80 @@ public class AwsOpsWorksCmCreateServerTask extends ConventionTask {
 	private Boolean associatePublicIpAddress;
 	 */
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private String backupId;
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private Integer backupRetentionCount;
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private Boolean disableAutomatedBackup = true;
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private String engine = "Chef";
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private Collection<EngineAttribute> engineAttributes =
 			new ArrayList<EngineAttribute>();
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private String engineModel = "Single";
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private String engineVersion;
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private String instanceProfileArn;
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private String instanceType;
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private String keyPair;
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private String preferredBackupWindow;
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private String preferredMaintenanceWindow;
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private String serverName;
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private String serviceRoleArn;
 	
-	/**
-	 * Public getter and setter
-	 */
 	@Getter
 	@Setter
 	private Collection<String> subnetIds = new ArrayList<String>();
 	
 	/**
-	 * Public getter
+	 * For testing (stubbing)
 	 */
 	@Getter
+	@Setter
+	AWSOpsWorksCM client;
+	
 	private Server server;
 	
 	
 	public AwsOpsWorksCmCreateServerTask() {
 		setDescription("Create Chef server.");
 		setGroup("AWS");
-		//setAssociatePublicIpAddress(true);
 	}
 	
 	public void addSubnetId(String id) {
@@ -182,9 +139,10 @@ public class AwsOpsWorksCmCreateServerTask extends ConventionTask {
 	@TaskAction
 	public void createServer() {
 		
-		AwsOpsWorksCmPluginExtension ext =
-				getProject().getExtensions().getByType(AwsOpsWorksCmPluginExtension.class);
-		AWSOpsWorksCM client = ext.getClient();
+		AWSOpsWorksCM client = getClient();
+		if (client == null) {
+			client = createClient();
+		}
 		// We call the getters to allow the convention task to work
 		CreateServerRequest request = new CreateServerRequest()
 			.withBackupId(getBackupId())
@@ -204,6 +162,13 @@ public class AwsOpsWorksCmCreateServerTask extends ConventionTask {
 			.withSubnetIds(getSubnetIds());
 		CreateServerResult result = client.createServer(request);
 		server = result.getServer();
+	}
+	
+	private AWSOpsWorksCM createClient() {
+		AwsOpsWorksCmPluginExtension ext =
+				getProject().getExtensions()
+					.getByType(AwsOpsWorksCmPluginExtension.class);
+		return ext.getClient();
 	}
 }
 
