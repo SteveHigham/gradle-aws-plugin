@@ -38,6 +38,13 @@ public class AmazonEC2DescribeInstancesTask extends ConventionTask {
 	@Setter
 	private List<String> instanceIds = new ArrayList<>();
 	
+	/**
+	 * For testing (stubbing)
+	 */
+	@Getter
+	@Setter
+	private AmazonEC2 client;
+	
 	@Getter
 	private DescribeInstancesResult describeInstancesResult;
 	
@@ -56,11 +63,14 @@ public class AmazonEC2DescribeInstancesTask extends ConventionTask {
 		
 		List<String> instanceIds = getInstanceIds();
 		
-		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
-		AmazonEC2 ec2 = ext.getClient();
+		AmazonEC2 ec2 = getClient();
+		if (ec2 == null) {
+			ec2 = createClient();
+		}
 		
 		DescribeInstancesRequest request = new DescribeInstancesRequest()
 			.withInstanceIds(instanceIds);
+		
 		describeInstancesResult = ec2.describeInstances(request);
 		List<Reservation> reservations =
 				describeInstancesResult.getReservations();
@@ -74,5 +84,10 @@ public class AmazonEC2DescribeInstancesTask extends ConventionTask {
 		}
 		getLogger().info("Describe EC2 instances requested: {}", instanceIds);
 		
+	}
+	
+	private AmazonEC2 createClient() {
+		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
+		return ext.getClient();
 	}
 }

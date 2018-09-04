@@ -67,6 +67,13 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 	@Setter
 	private int loopWait = 10; // sec
 	
+	/**
+	 * For testing (stubbing)
+	 */
+	@Getter
+	@Setter
+	private AmazonEC2 client;
+	
 	@Getter
 	private Instance instance;
 	
@@ -96,8 +103,10 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 		int loopTimeout = getLoopTimeout();
 		int loopWait = getLoopWait();
 		
-		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
-		AmazonEC2 ec2 = ext.getClient();
+		AmazonEC2 ec2 = getClient();
+		if (ec2 == null) {
+			ec2 = createClient();
+		}
 		
 		long start = System.currentTimeMillis();
 		while (true) {
@@ -156,6 +165,13 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 				throw new GradleException("Fail to describe instance: " + instanceId, e);
 			}
 		}
+	}
+	
+	private AmazonEC2 createClient() {
+		AmazonEC2PluginExtension ext = getProject().getExtensions()
+			.getByType(AmazonEC2PluginExtension.class);
+		return ext.getClient();
+		
 	}
 	
 }

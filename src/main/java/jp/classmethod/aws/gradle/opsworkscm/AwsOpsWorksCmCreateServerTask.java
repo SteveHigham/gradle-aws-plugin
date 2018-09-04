@@ -105,7 +105,7 @@ public class AwsOpsWorksCmCreateServerTask extends ConventionTask {
 	 */
 	@Getter
 	@Setter
-	AWSOpsWorksCM client;
+	private AWSOpsWorksCM client;
 	
 	@Getter
 	private Server server;
