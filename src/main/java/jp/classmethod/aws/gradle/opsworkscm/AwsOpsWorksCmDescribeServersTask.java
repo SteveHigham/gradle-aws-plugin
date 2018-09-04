@@ -34,6 +34,13 @@ public class AwsOpsWorksCmDescribeServersTask extends ConventionTask {
 	@Setter
 	private String serverName;
 	
+	/**
+	 * For testing (stubbing)
+	 */
+	@Getter
+	@Setter
+	private AWSOpsWorksCM client;
+	
 	@Getter
 	private DescribeServersResult result;
 	
@@ -51,13 +58,22 @@ public class AwsOpsWorksCmDescribeServersTask extends ConventionTask {
 	@TaskAction
 	public void describeServers() {
 		
-		AwsOpsWorksCmPluginExtension ext =
-				getProject().getExtensions().getByType(AwsOpsWorksCmPluginExtension.class);
-		AWSOpsWorksCM client = ext.getClient();
+		AWSOpsWorksCM client = getClient();
+		if (client == null) {
+			client = createClient();
+		}
+		
 		// We call the getters to allow the convention task to work
 		DescribeServersRequest request = new DescribeServersRequest()
 			.withServerName(getServerName());
 		result = client.describeServers(request);
+	}
+	
+	private AWSOpsWorksCM createClient() {
+		AwsOpsWorksCmPluginExtension ext =
+				getProject().getExtensions()
+					.getByType(AwsOpsWorksCmPluginExtension.class);
+		return ext.getClient();
 	}
 }
 
