@@ -31,6 +31,13 @@ public class AwsOpsWorksCmDeleteServerTask extends ConventionTask {
 	@Setter
 	private String serverName;
 	
+	/**
+	 * For testing (stubbing)
+	 */
+	@Getter
+	@Setter
+	private AWSOpsWorksCM client;
+	
 	
 	public AwsOpsWorksCmDeleteServerTask() {
 		setDescription("Delete Chef server.");
@@ -40,14 +47,22 @@ public class AwsOpsWorksCmDeleteServerTask extends ConventionTask {
 	@TaskAction
 	public void createServer() {
 		
-		// We don't capture the DeleteServerResult as it contains no useful info.
-		AwsOpsWorksCmPluginExtension ext =
-				getProject().getExtensions().getByType(AwsOpsWorksCmPluginExtension.class);
-		AWSOpsWorksCM client = ext.getClient();
+		AWSOpsWorksCM client = getClient();
+		if (client == null) {
+			client = createClient();
+		}
+		
 		// We call the getters to allow the convention task to work
 		DeleteServerRequest request = new DeleteServerRequest()
 			.withServerName(getServerName());
 		client.deleteServer(request);
+	}
+	
+	private AWSOpsWorksCM createClient() {
+		AwsOpsWorksCmPluginExtension ext =
+				getProject().getExtensions()
+					.getByType(AwsOpsWorksCmPluginExtension.class);
+		return ext.getClient();
 	}
 }
 
