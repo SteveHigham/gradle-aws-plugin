@@ -84,7 +84,7 @@ public class SyncTask extends ConventionTask {
 	@Getter
 	private CannedAccessControlList acl;
 	
-	/**
+	/**git status
 	 * Externally exposed client for stubbing
 	 */
 	@Getter
@@ -110,13 +110,14 @@ public class SyncTask extends ConventionTask {
 		if (source == null) {
 			throw new GradleException("source is not specified");
 		}
-		if (source.isDirectory() == false) {
-			throw new GradleException("source must be directory");
-		}
 		
 		prefix = prefix.startsWith("/") ? prefix.substring(1) : prefix;
 		
 		if (s3 == null) {
+			if (source.isDirectory() == false) {
+				throw new GradleException("source must be directory");
+			}
+			
 			AmazonS3PluginExtension ext = getProject().getExtensions().getByType(AmazonS3PluginExtension.class);
 			s3 = ext.getClient();
 			
