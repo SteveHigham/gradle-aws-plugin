@@ -37,6 +37,13 @@ public class AmazonEC2StopInstanceTask extends ConventionTask {
 	@Getter
 	private StopInstancesResult stopInstancesResult;
 	
+	/**
+	 * For testing (stubbing)
+	 */
+	@Getter
+	@Setter
+	AmazonEC2 client;
+	
 	
 	public AmazonEC2StopInstanceTask() {
 		setDescription("Stop EC2 instance.");
@@ -52,10 +59,16 @@ public class AmazonEC2StopInstanceTask extends ConventionTask {
 			return;
 		}
 		
-		AmazonEC2PluginExtension ext = getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
-		AmazonEC2 ec2 = ext.getClient();
+		AmazonEC2 ec2 = getClient();
+		if (ec2 == null) {
+			AmazonEC2PluginExtension ext =
+					getProject().getExtensions().getByType(AmazonEC2PluginExtension.class);
+			ec2 = ext.getClient();
+		}
 		
 		stopInstancesResult = ec2.stopInstances(new StopInstancesRequest(instanceIds));
 		getLogger().info("Stop EC2 instance {} requested", instanceIds);
 	}
 }
+
+// End of file.
