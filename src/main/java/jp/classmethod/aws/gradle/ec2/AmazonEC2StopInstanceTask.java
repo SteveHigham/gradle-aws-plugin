@@ -42,7 +42,7 @@ public class AmazonEC2StopInstanceTask extends ConventionTask {
 	 */
 	@Getter
 	@Setter
-	AmazonEC2 client;
+	private AmazonEC2 client;
 	
 	
 	public AmazonEC2StopInstanceTask() {
