@@ -35,6 +35,10 @@ public class AmazonCloudFormationValidateTemplateFileTask extends ConventionTask
 	@Setter
 	private File cfnTemplateFile;
 	
+	@Getter
+	@Setter
+	private String region;
+	
 	/**
 	 * For testing (stubbing)
 	 */
@@ -52,6 +56,10 @@ public class AmazonCloudFormationValidateTemplateFileTask extends ConventionTask
 	public void validateTemplateFile() throws InterruptedException, IOException {
 		// to enable conventionMappings feature
 		File cfnTemplateFile = getCfnTemplateFile();
+		String region = getRegion();
+		if (region != null) {
+			region = region.trim();
+		}
 		AmazonCloudFormation client = getClient();
 		if (client == null) {
 			if (cfnTemplateFile == null || !cfnTemplateFile.exists()) {
@@ -60,6 +68,9 @@ public class AmazonCloudFormationValidateTemplateFileTask extends ConventionTask
 			
 			AmazonCloudFormationPluginExtension ext =
 					getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
+			if (region != null && region.length() > 0) {
+				ext.setRegion(region);
+			}
 			
 			if (!isValidTemplateFile(ext, cfnTemplateFile)) {
 				throw new GradleException("cloudFormation template has invalid format");
