@@ -48,6 +48,10 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	private String region;
+	
+	@Getter
+	@Setter
 	private String stackName;
 	
 	@Getter
@@ -243,11 +247,17 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	}
 	
 	AmazonCloudFormation createClient() {
+		String region = getRegion();
+		if (region != null) {
+			region = region.trim();
+		}
 		AmazonCloudFormationPluginExtension ext =
 				getProject().getExtensions()
 					.getByType(AmazonCloudFormationPluginExtension.class);
+		if (region != null && region.length() > 0) {
+			ext.setRegion(region);
+		}
 		return ext.getClient();
-		
 	}
 	
 	void doTaskAction(AmazonCloudFormation client, String stackName)
