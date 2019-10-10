@@ -34,6 +34,13 @@ public class AmazonCloudFormationGetStatusTask extends ConventionTask {
 	@Getter
 	private DescribeStacksResult statusResult;
 	
+	/**
+	 * For testing (stubbing)
+	 */
+	@Getter
+	@Setter
+	AmazonCloudFormation client;
+	
 	
 	public AmazonCloudFormationGetStatusTask() {
 		setDescription("Get stack status.");
@@ -44,11 +51,13 @@ public class AmazonCloudFormationGetStatusTask extends ConventionTask {
 	public void getStatus() {
 		
 		String cfnStackName = getCfnStackName();
-		AmazonCloudFormationPluginExtension ext =
-				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
-		AmazonCloudFormation cfn = ext.getClient();
+		if (client == null) {
+			AmazonCloudFormationPluginExtension ext =
+					getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
+			client = ext.getClient();
+		}
 		DescribeStacksRequest request = new DescribeStacksRequest().withStackName(cfnStackName);
-		statusResult = cfn.describeStacks(request);
+		statusResult = client.describeStacks(request);
 	}
 }
 
