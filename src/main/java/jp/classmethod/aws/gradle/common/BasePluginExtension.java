@@ -38,7 +38,8 @@ public abstract class BasePluginExtension<T extends AmazonWebServiceClient> {
 	@Setter
 	private String profileName;
 	
-	@Getter(lazy = true, onMethod = @__(@SuppressWarnings("unchecked")))
+	//@Getter(lazy = true, onMethod = @__(@SuppressWarnings("unchecked")))
+	@Getter(lazy = true)
 	private final T client = initClient();
 	
 	

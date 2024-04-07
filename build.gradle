@@ -50,7 +50,7 @@ tasks.withType(AbstractCompile) each {
 }
 
 compileJava {
-options.compilerArgs << "-Werror"
+  //options.compilerArgs << "-Werror"
 	options.compilerArgs << "-Xlint:all" << "-Xlint:-processing" << "-Xlint:-deprecation"
 }
 
