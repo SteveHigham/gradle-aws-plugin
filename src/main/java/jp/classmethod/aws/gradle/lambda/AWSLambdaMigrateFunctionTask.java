@@ -115,16 +115,7 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 		File zipFile = getZipFile();
 		S3File s3File = getS3File();
 		
-		if (functionName == null) {
-			throw new GradleException("functionName is required");
-		}
-		
-		if ((zipFile == null && s3File == null) || (zipFile != null && s3File != null)) {
-			throw new GradleException("exactly one of zipFile or s3File is required");
-		}
-		if (s3File != null) {
-			s3File.validate();
-		}
+		createOrUpdateCheckPrerequisites(functionName, zipFile, s3File);
 		
 		AWSLambdaPluginExtension ext = getProject().getExtensions().getByType(AWSLambdaPluginExtension.class);
 		AWSLambda lambda = ext.getClient();
@@ -143,6 +134,19 @@ public class AWSLambdaMigrateFunctionTask extends ConventionTask {
 			getLogger().warn(e.getMessage());
 			getLogger().warn("Creating function... {}", functionName);
 			createFunction(lambda);
+		}
+	}
+	
+	private void createOrUpdateCheckPrerequisites(String functionName, File zipFile, S3File s3File) {
+		if (functionName == null) {
+			throw new GradleException("functionName is required");
+		}
+		
+		if ((zipFile == null && s3File == null) || (zipFile != null && s3File != null)) {
+			throw new GradleException("exactly one of zipFile or s3File is required");
+		}
+		if (s3File != null) {
+			s3File.validate();
 		}
 	}
 	

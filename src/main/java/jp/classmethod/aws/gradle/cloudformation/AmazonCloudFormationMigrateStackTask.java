@@ -262,27 +262,16 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	
 	void doTaskAction(AmazonCloudFormation client, String stackName)
 			throws InterruptedException, IOException {
-		List<String> stableStatuses = getStableStatuses();
-		String cfnTemplateUrl = getCfnTemplateUrl();
-		File cfnTemplateFile = getCfnTemplateFile();
+		//List<String> stableStatuses = getStableStatuses();
+		//String cfnTemplateUrl = getCfnTemplateUrl();
+		//File cfnTemplateFile = getCfnTemplateFile();
 		
 		try {
-			DescribeStacksResult describeStackResult =
-					client.describeStacks(new DescribeStacksRequest().withStackName(stackName));
-			Stack stack = describeStackResult.getStacks().get(0);
-			if (stack.getStackStatus().equals("DELETE_COMPLETE")) {
-				getLogger().warn("deleted stack {} already exists", stackName);
-				deleteStack(client);
-				createStack(client);
-			} else if (stableStatuses.contains(stack.getStackStatus())) {
-				updateStack(client);
-			} else {
-				throw new GradleException("invalid status for update: " + stack.getStackStatus());
-			}
+			doTaskActionBlock(client, stackName);
 		} catch (AmazonServiceException e) {
 			if (e.getMessage().contains("does not exist")) {
 				getLogger().warn("stack {} not found", stackName);
-				if (cfnTemplateUrl == null && cfnTemplateFile == null) {
+				if (getCfnTemplateUrl() == null && getCfnTemplateFile() == null) {
 					getLogger().error("cfnTemplateUrl or cfnTemplateFile must be provided");
 					throw e;
 				}
@@ -293,6 +282,24 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 				throw e;
 			}
 		}
+	}
+	
+	private void doTaskActionBlock(AmazonCloudFormation client, String stackName)
+			throws InterruptedException, IOException {
+		DescribeStacksResult describeStackResult =
+				client.describeStacks(new DescribeStacksRequest().withStackName(stackName));
+		Stack stack = describeStackResult.getStacks().get(0);
+		List<String> stableStatuses = getStableStatuses();
+		if (stack.getStackStatus().equals("DELETE_COMPLETE")) {
+			getLogger().warn("deleted stack {} already exists", stackName);
+			deleteStack(client);
+			createStack(client);
+		} else if (stableStatuses.contains(stack.getStackStatus())) {
+			updateStack(client);
+		} else {
+			throw new GradleException("invalid status for update: " + stack.getStackStatus());
+		}
+		
 	}
 	
 }

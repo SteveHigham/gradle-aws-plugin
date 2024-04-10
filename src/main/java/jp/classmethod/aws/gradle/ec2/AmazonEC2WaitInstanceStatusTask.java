@@ -34,24 +34,21 @@ import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Instance;
 
+@Getter
 public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 	
-	@Getter
 	@Setter
 	private String instanceId;
 	
-	@Getter
 	@Setter
-	private Collection<Filter> filters = new ArrayList<Filter>();
+	private Collection<Filter> filters = new ArrayList<>();
 	
-	@Getter
 	@Setter
 	private List<String> successStatuses = Arrays.asList(
 			"running",
 			"stopped",
 			"terminated");
 	
-	@Getter
 	@Setter
 	private List<String> waitStatuses = Arrays.asList(
 			"pending",
@@ -59,25 +56,20 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 			"stopping",
 			"not found");
 	
-	@Getter
 	@Setter
 	private int loopTimeout = 900; // sec
 	
-	@Getter
 	@Setter
 	private int loopWait = 10; // sec
 	
 	/**
 	* For testing (stubbing)
 	*/
-	@Getter
 	@Setter
 	private AmazonEC2 client;
 	
-	@Getter
 	private Instance instance;
 	
-	@Getter
 	private String lastStatus;
 	
 	
@@ -128,43 +120,48 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 	void checkCurrentStatus(AmazonEC2 ec2) {
 		// to enable conventionMappings feature
 		String instanceId = getInstanceId();
-		Collection<Filter> filters = getFilters();
-		List<String> successStatuses = getSuccessStatuses();
-		List<String> waitStatuses = getWaitStatuses();
 		
 		try {
-			DescribeInstancesResult dir = ec2.describeInstances(new DescribeInstancesRequest()
-				.withInstanceIds(instanceId)
-				.withFilters(filters));
-			switch (dir.getReservations().size()) {
-				case 0:
-					if (instanceId != null) {
-						throw new GradleException(instanceId + " does not exist");
-					}
-					break;
-				case 1:
-					instance = dir.getReservations().get(0).getInstances().get(0);
-					lastStatus = instance.getState().getName();
-					if (successStatuses.contains(lastStatus)) {
-						getLogger().info("Status of instance {} is now {}.", instanceId, lastStatus);
-						setInstanceId(instance.getInstanceId());
-					} else if (waitStatuses.contains(lastStatus)) {
-						getLogger().info("Status of instance {} is {}...", instanceId, lastStatus);
-						instance = null;
-					} else {
-						// fail when current status is not waitStatuses or successStatuses
-						throw new GradleException(
-								"Status of instance is " + lastStatus + ".  It seems to be failed.");
-					}
-					break;
-				default:
-					throw new GradleException("Query returned more than one instance");
-			}
+			checkCurrentStatusBlock(ec2);
 		} catch (AmazonServiceException e) {
 			if (instance == null) {
 				throw new GradleException("Fail to describe instance: " + instanceId, e);
 			}
 		}
+	}
+	
+	private void checkCurrentStatusBlock(AmazonEC2 ec2) {
+		String instanceId = getInstanceId();
+		Collection<Filter> filters = getFilters();
+		DescribeInstancesResult dir = ec2.describeInstances(new DescribeInstancesRequest()
+			.withInstanceIds(instanceId)
+			.withFilters(filters));
+		
+		switch (dir.getReservations().size()) {
+			case 0:
+				if (instanceId != null) {
+					throw new GradleException(instanceId + " does not exist");
+				}
+				break;
+			case 1:
+				instance = dir.getReservations().get(0).getInstances().get(0);
+				lastStatus = instance.getState().getName();
+				if (successStatuses.contains(lastStatus)) {
+					getLogger().info("Status of instance {} is now {}.", instanceId, lastStatus);
+					setInstanceId(instance.getInstanceId());
+				} else if (waitStatuses.contains(lastStatus)) {
+					getLogger().info("Status of instance {} is {}...", instanceId, lastStatus);
+					instance = null;
+				} else {
+					// fail when current status is not waitStatuses or successStatuses
+					throw new GradleException(
+							"Status of instance is " + lastStatus + ".  It seems to be failed.");
+				}
+				break;
+			default:
+				throw new GradleException("Query returned more than one instance");
+		}
+		
 	}
 	
 	private AmazonEC2 createClient() {

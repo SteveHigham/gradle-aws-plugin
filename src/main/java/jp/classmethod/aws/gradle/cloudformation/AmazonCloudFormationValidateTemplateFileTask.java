@@ -29,21 +29,17 @@ import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 
+@Setter
+@Getter
 public class AmazonCloudFormationValidateTemplateFileTask extends ConventionTask {
 	
-	@Getter
-	@Setter
 	private File cfnTemplateFile;
 	
-	@Getter
-	@Setter
 	private String region;
 	
 	/**
 	* For testing (stubbing)
 	*/
-	@Getter
-	@Setter
 	AmazonCloudFormation client;
 	
 	
@@ -53,28 +49,34 @@ public class AmazonCloudFormationValidateTemplateFileTask extends ConventionTask
 	}
 	
 	@TaskAction
-	public void validateTemplateFile() throws InterruptedException, IOException {
+	public void validateTemplateFile() throws IOException {
 		// to enable conventionMappings feature
-		File cfnTemplateFile = getCfnTemplateFile();
+		//File cfnTemplateFile = getCfnTemplateFile();
 		String region = getRegion();
 		if (region != null) {
 			region = region.trim();
 		}
 		AmazonCloudFormation client = getClient();
 		if (client == null) {
-			if (cfnTemplateFile == null || !cfnTemplateFile.exists()) {
-				throw new GradleException("No cloudformation template defined");
-			}
-			
-			AmazonCloudFormationPluginExtension ext =
-					getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
-			if (region != null && region.length() > 0) {
-				ext.setRegion(region);
-			}
-			
-			if (!isValidTemplateFile(ext, cfnTemplateFile)) {
-				throw new GradleException("cloudFormation template has invalid format");
-			}
+			validateTemplateFileNullClient(region);
+		}
+	}
+	
+	private void validateTemplateFileNullClient(String region) throws IOException {
+		File cfnTemplateFile = getCfnTemplateFile();
+		
+		if (cfnTemplateFile == null || !cfnTemplateFile.exists()) {
+			throw new GradleException("No cloudformation template defined");
+		}
+		
+		AmazonCloudFormationPluginExtension ext =
+				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
+		if (region != null && region.length() > 0) {
+			ext.setRegion(region);
+		}
+		
+		if (!isValidTemplateFile(ext, cfnTemplateFile)) {
+			throw new GradleException("cloudFormation template has invalid format");
 		}
 	}
 	

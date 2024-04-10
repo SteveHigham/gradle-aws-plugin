@@ -36,21 +36,17 @@ import com.amazonaws.services.cloudformation.model.DescribeStacksResult;
 import com.amazonaws.services.cloudformation.model.Stack;
 import com.amazonaws.services.cloudformation.model.StackEvent;
 
+@Setter
+@Getter
 public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	
-	@Getter
-	@Setter
 	private String stackName;
 	
-	@Getter
-	@Setter
 	private List<String> successStatuses = Arrays.asList(
 			"CREATE_COMPLETE",
 			"UPDATE_COMPLETE",
 			"DELETE_COMPLETE");
 	
-	@Getter
-	@Setter
 	private List<String> waitStatuses = Arrays.asList(
 			"CREATE_IN_PROGRESS",
 			"ROLLBACK_IN_PROGRESS",
@@ -60,31 +56,19 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 			"UPDATE_ROLLBACK_IN_PROGRESS",
 			"UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS");
 	
-	@Getter
-	@Setter
 	private int loopTimeout = 900; // sec
 	
-	@Getter
-	@Setter
 	private int loopWait = 10; // sec
 	
-	@Getter
-	@Setter
 	private String lastStatus;
 	
-	@Getter
-	@Setter
 	private List<String> printedEvents;
 	
-	@Getter
-	@Setter
 	private Stack stack;
 	
 	/**
 	* For testing (stubbing)
 	*/
-	@Getter
-	@Setter
 	AmazonCloudFormation client;
 	
 	
@@ -115,60 +99,31 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	
 	void doWaitLoop(AmazonCloudFormation client) throws InterruptedException {
 		int loopTimeout = getLoopTimeout();
-		int loopWait = getLoopWait();
-		String stackName = getStackName();
+		//String stackName = getStackName();
 		List<String> successStatuses = getSuccessStatuses();
-		List<String> waitStatuses = getWaitStatuses();
 		long start = System.currentTimeMillis();
 		printedEvents = new LinkedList<String>();
 		
 		List<StackEvent> stackEvents = null;
 		while (true) {
-			if (System.currentTimeMillis() > start + (loopTimeout * 1000)) {
+			if (System.currentTimeMillis() > start + (loopTimeout * 1000L)) {
 				throw new GradleException("Timeout");
 			}
 			try {
-				// Get stack info
-				DescribeStacksRequest describeStackRequest =
-						new DescribeStacksRequest().withStackName(stackName);
-				DescribeStacksResult describeStackResult =
-						client.describeStacks(describeStackRequest);
-				// If stack doesn't exist we get an exception
-				stack = describeStackResult.getStacks().get(0);
-				lastStatus = stack.getStackStatus();
-				
-				// Get stack events info
-				DescribeStackEventsRequest request =
-						new DescribeStackEventsRequest().withStackName(stackName);
-				// We generally get an exception here once the deletion has completed
-				DescribeStackEventsResult result =
-						client.describeStackEvents(request);
-				stackEvents = new LinkedList<StackEvent>(result.getStackEvents());
-				Collections.reverse(stackEvents);
+				getStackInfo();
+				stackEvents = getStackEventsInfo();
 				
 				// Always output new events; might be the last time you can
 				//printEvents(stackEvents);
 				
-				// If completed successfully, output status and outputs of 
-				// stack, then break out of while loop
-				if (successStatuses.contains(lastStatus)) {
-					getLogger().debug("Status of stack {} is now {} - exiting loop.",
-							stackName, lastStatus);
-					//printOutputs(stack);
+				if (!doWaitLoopBlock(successStatuses.contains(lastStatus))) {
 					break;
-					
-					// Else if still going, sleep some then loop again
-				} else if (waitStatuses.contains(lastStatus)) {
-					getLogger().debug("Status of stack {} is {}...", stackName, lastStatus);
-					Thread.sleep(loopWait * 1000);
-					
-					// Else, it must have failed, so get out of while loop
-				} else {
-					throw new GradleException(
-							"Status of stack " + stackName + " is " + lastStatus + ".  It seems to be failed.");
 				}
 			} catch (AmazonCloudFormationException e) {
-				if (e.getMessage().indexOf("does not exist") >= 0) {
+				handleLoopWaitException(e);
+				break;
+				/*
+				if (e.getMessage().contains("does not exist")) {
 					lastStatus = "DELETE_COMPLETE";
 					//printEvents(stackEvents);
 					//printOutputs(stack);
@@ -176,6 +131,7 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 				} else {
 					throw new GradleException("Unexpected exception for stack: " + stackName, e);
 				}
+				*/
 			}
 		}
 		if (stackEvents != null) {
@@ -183,6 +139,40 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 		}
 		if (stack != null) {
 			printOutputs(stack);
+		}
+	}
+	
+	private void getStackInfo() {
+		DescribeStacksRequest describeStackRequest =
+				new DescribeStacksRequest().withStackName(stackName);
+		DescribeStacksResult describeStackResult =
+				client.describeStacks(describeStackRequest);
+		// If stack doesn't exist we get an exception
+		stack = describeStackResult.getStacks().get(0);
+		lastStatus = stack.getStackStatus();
+	}
+	
+	private List<StackEvent> getStackEventsInfo() {
+		List<StackEvent> stackEvents = null;
+		
+		DescribeStackEventsRequest request =
+				new DescribeStackEventsRequest().withStackName(stackName);
+		// We generally get an exception here once the deletion has completed
+		DescribeStackEventsResult result =
+				client.describeStackEvents(request);
+		stackEvents = new LinkedList<StackEvent>(result.getStackEvents());
+		Collections.reverse(stackEvents);
+		return stackEvents;
+	}
+	
+	private void handleLoopWaitException(AmazonCloudFormationException e) {
+		if (e.getMessage().contains("does not exist")) {
+			lastStatus = "DELETE_COMPLETE";
+			//printEvents(stackEvents);
+			//printOutputs(stack);
+			//break;
+		} else {
+			throw new GradleException("Unexpected exception for stack: " + stackName, e);
 		}
 	}
 	
@@ -210,5 +200,30 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 		getLogger().info("==== Outputs ====");
 		stack.getOutputs().stream()
 			.forEach(o -> getLogger().info("{} ({}) = {}", o.getOutputKey(), o.getDescription(), o.getOutputValue()));
+	}
+	
+	// returns false for break
+	private boolean doWaitLoopBlock(boolean successContainsLast) throws InterruptedException {
+		String stackName = getStackName();
+		
+		// If completed successfully, output status and outputs of
+		// stack, then break out of while loop
+		if (successContainsLast) {
+			getLogger().debug("Status of stack {} is now {} - exiting loop.",
+					stackName, lastStatus);
+			//printOutputs(stack);
+			return false;
+			
+			// Else if still going, sleep some then loop again
+		} else if (waitStatuses.contains(lastStatus)) {
+			getLogger().debug("Status of stack {} is {}...", stackName, lastStatus);
+			Thread.sleep(loopWait * 1000);
+			
+			// Else, it must have failed, so get out of while loop
+		} else {
+			throw new GradleException(
+					"Status of stack " + stackName + " is " + lastStatus + ".  It seems to be failed.");
+		}
+		return true;
 	}
 }

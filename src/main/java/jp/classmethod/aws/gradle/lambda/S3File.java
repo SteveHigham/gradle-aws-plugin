@@ -15,23 +15,21 @@
 */
 package jp.classmethod.aws.gradle.lambda;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.GradleException;
 
+@Setter
+@Getter
 public class S3File {
 	
-	@Getter
-	@Setter
 	private String bucketName;
 	
-	@Getter
-	@Setter
 	private String key;
 	
-	@Getter
-	@Setter
 	private String objectVersion;
 	
 	
@@ -39,9 +37,9 @@ public class S3File {
 	* Validates that both bucketName and key are provided.
 	*/
 	public void validate() {
-		boolean missingBucketName = bucketName == null || bucketName.trim().isEmpty();
-		boolean missingKey = key == null || key.trim().isEmpty();
-		if (missingBucketName || missingKey) {
+		//boolean missingBucketName = bucketName == null || bucketName.trim().isEmpty();
+		//boolean missingKey = key == null || key.trim().isEmpty();
+		if (isBlank(bucketName) || isBlank(key)) {
 			throw new GradleException("bucketName and key are required for an S3File");
 		}
 	}

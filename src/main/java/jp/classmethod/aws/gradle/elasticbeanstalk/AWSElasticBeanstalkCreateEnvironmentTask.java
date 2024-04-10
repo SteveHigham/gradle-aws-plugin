@@ -15,6 +15,8 @@
 */
 package jp.classmethod.aws.gradle.elasticbeanstalk;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,38 +36,24 @@ import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsResult;
 import com.amazonaws.services.elasticbeanstalk.model.Tag;
 import com.amazonaws.services.elasticbeanstalk.model.UpdateEnvironmentRequest;
 
+@Setter
+@Getter
 public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask { // NOPMD
 	
-	@Getter
-	@Setter
 	private String appName;
 	
-	@Getter
-	@Setter
 	private String envName;
 	
-	@Getter
-	@Setter
 	private String envDesc = "";
 	
-	@Getter
-	@Setter
 	private String cnamePrefix = java.util.UUID.randomUUID().toString();
 	
-	@Getter
-	@Setter
 	private String templateName;
 	
-	@Getter
-	@Setter
 	private String versionLabel;
 	
-	@Getter
-	@Setter
 	private Tier tier = Tier.WebServer;
 	
-	@Getter
-	@Setter
 	private Map<String, String> tags = new HashMap<String, String>();
 	
 	
@@ -135,13 +123,13 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask { /
 				.withVersionLabel(versionLabel);
 			
 			// All other variables are optional and refer to the environment
-			if (isNotBlank(envName)) {
+			if (!isBlank(envName)) {
 				req.withEnvironmentName(envName);
 			}
-			if (isNotBlank(envDesc)) {
+			if (!isBlank(envDesc)) {
 				req.withDescription(envDesc);
 			}
-			if (isNotBlank(templateName)) {
+			if (!isBlank(templateName)) {
 				req.withTemplateName(templateName);
 			}
 			
@@ -152,7 +140,9 @@ public class AWSElasticBeanstalkCreateEnvironmentTask extends ConventionTask { /
 	}
 	
 	// simple helper method to not include apache commons lang's StringUtils only for this
-	private boolean isNotBlank(String str) {
-		return str != null && !str.trim().isEmpty();
-	}
+	//private boolean isNotBlank(String str) {
+	//}
+	//private boolean isNotBlank(String str) {
+	//return str != null && !str.trim().isEmpty();
+	//}
 }

@@ -42,6 +42,7 @@ import com.google.common.io.Files;
 
 import groovy.lang.Closure;
 
+@Getter
 public class SyncTask extends ConventionTask {
 	
 	private static String md5(File file) {
@@ -53,41 +54,32 @@ public class SyncTask extends ConventionTask {
 	}
 	
 	
-	@Getter
 	@Setter
 	private String bucketName;
 	
-	@Getter
 	@Setter
 	private String prefix = "";
 	
-	@Getter
 	@Setter
 	private File source;
 	
-	@Getter
 	@Setter
 	private boolean delete;
 	
-	@Getter
 	@Setter
 	private int threads = 5;
 	
-	@Getter
 	@Setter
 	private StorageClass storageClass = StorageClass.Standard;
 	
-	@Getter
 	@Setter
 	private Closure<ObjectMetadata> metadataProvider;
 	
-	@Getter
 	private CannedAccessControlList acl;
 	
 	/**git status
 	* Externally exposed client for stubbing
 	*/
-	@Getter
 	@Setter
 	private AmazonS3 client;
 	
@@ -104,14 +96,8 @@ public class SyncTask extends ConventionTask {
 		File source = getSource();
 		AmazonS3 s3 = getClient();
 		
-		if (bucketName == null) {
-			throw new GradleException("bucketName is not specified");
-		}
-		if (source == null) {
-			throw new GradleException("source is not specified");
-		}
-		
 		prefix = prefix.startsWith("/") ? prefix.substring(1) : prefix;
+		checkUploadPrerequisites(bucketName, source);
 		
 		if (s3 == null) {
 			if (source.isDirectory() == false) {
@@ -126,6 +112,15 @@ public class SyncTask extends ConventionTask {
 			if (isDelete()) {
 				deleteAbsent(s3, prefix);
 			}
+		}
+	}
+	
+	private void checkUploadPrerequisites(String bucketName, File source) {
+		if (bucketName == null) {
+			throw new GradleException("bucketName is not specified");
+		}
+		if (source == null) {
+			throw new GradleException("source is not specified");
 		}
 	}
 	
