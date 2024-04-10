@@ -34,8 +34,9 @@ apply from: 'gradle/resolveDependencies.gradle'
 defaultTasks "clean", "build"
 
 // ======== code quality ========
+// Should consider replacing findbugs with com.github.spotbugs
 apply plugin: "checkstyle"
-apply plugin: "findbugs"
+// apply plugin: "findbugs"
 apply plugin: "pmd"
 apply plugin: "de.aaschmid.cpd"
 apply plugin: "jacoco"
@@ -106,6 +107,7 @@ task verifyNoCheckstyleWarningsInTest {
 checkstyleTest.finalizedBy verifyNoCheckstyleWarningsInTest
 
 // findbugs
+/*
 findbugs {
 	toolVersion = "3.0.1"
 	effort = "max"
@@ -118,6 +120,7 @@ tasks.withType(FindBugs) {
 		html.enabled = true
 	}
 }
+ */
 
 // pmd
 pmd {
@@ -279,12 +282,12 @@ eclipse {
 		buildCommand 'org.eclipse.jdt.core.javabuilder'
 		buildCommand 'org.springframework.ide.eclipse.core.springbuilder'
 		buildCommand 'net.sf.eclipsecs.core.CheckstyleNature'
-		buildCommand 'edu.umd.cs.findbugs.plugin.eclipse.findbugsNature'
+		// buildCommand 'edu.umd.cs.findbugs.plugin.eclipse.findbugsNature'
 		natures 'org.eclipse.jdt.core.javanature',
 				'org.springsource.ide.eclipse.gradle.core.nature',
 				'org.springframework.ide.eclipse.core.springnature',
-				'net.sf.eclipsecs.core.CheckstyleBuilder',
-				'edu.umd.cs.findbugs.plugin.eclipse.findbugsBuilder'
+				'net.sf.eclipsecs.core.CheckstyleBuilder'
+				// 'edu.umd.cs.findbugs.plugin.eclipse.findbugsBuilder'
 	}
 	classpath {
 		defaultOutputDir = file('build/classes')

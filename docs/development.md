@@ -3,6 +3,10 @@
 The plugin is organised to allow you to use a fork and deploy your own custom version of it
 to a maven repository.
 
+### Current status
+
+Running under gradle 5.6.4.
+
 ### Using plugin locally from another project
 
 A `settings.gradle` file is included at the root level in order to allow you to use the plugin
