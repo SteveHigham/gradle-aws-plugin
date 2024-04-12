@@ -10,7 +10,8 @@ buildscript {
 		maven { url = 'https://plugins.gradle.org/m2/' }
 	}
 	dependencies {
-		classpath "com.diffplug.spotless:spotless-plugin-gradle:4.5.1" // 3.30.0"
+		//classpath "com.diffplug.spotless:spotless-plugin-gradle:5.0.0" //4.5.1"
+    //classpath "com.diffplug.spotless:spotless-plugin-gradle:5.17.1" //4.5.1"
 		classpath "de.thetaphi:forbiddenapis:3.7"
 		classpath "de.aaschmid:gradle-cpd-plugin:3.1"
 		classpath "net.ltgt.gradle:gradle-errorprone-plugin:0.0.8"
@@ -29,6 +30,7 @@ plugins {
 
   id 'checkstyle'
   id 'pmd'
+  id 'com.diffplug.spotless' version '5.0.0'
 }
 
 group = "jp.classmethod.aws"
@@ -50,7 +52,8 @@ defaultTasks "clean", "build"
 apply plugin: "de.aaschmid.cpd"
 //apply plugin: "jacoco"
 apply plugin: "de.thetaphi.forbiddenapis"
-apply plugin: "com.diffplug.gradle.spotless"
+//apply plugin: "com.diffplug.gradle.spotless"
+//apply plugin "com.diffplug.spotless"
 
 // compiler
 //sourceCompatibility = 1.8
@@ -78,8 +81,8 @@ uploadArchives {
 // jacoco
 jacocoTestReport {
 	reports {
-		xml.enabled false
-		csv.enabled false
+		xml.required = false
+		csv.required = false
 	}
 }
 
@@ -148,8 +151,8 @@ pmdTest {
 }
 cpdCheck {
 	reports {
-		text.enabled = true
-		xml.enabled = false
+		text.required = true
+		xml.required = false
 	}
 	source = sourceSets.main.allJava // only main source
 	ignoreFailures = true
