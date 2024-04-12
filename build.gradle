@@ -34,6 +34,8 @@ plugins {
 group = "jp.classmethod.aws"
 ext.artifactId = "gradle-aws-plugin"
 
+apply plugin: "com.gradle.plugin-publish"
+
 // gradle configuration
 apply from: 'gradle/version.gradle'
 apply from: 'gradle/resolveDependencies.gradle'
@@ -293,7 +295,7 @@ dependencies {
 // ======== deploy artifacts ========
 // Allows forks of the plugin to define their own deployment mechanisms
 // in separate files named according to their maven group name
-//apply from: "deploy/${group}.gradle"
+apply from: "deploy/${group}.gradle"
 
 // ======== IDE ========
 eclipse {
