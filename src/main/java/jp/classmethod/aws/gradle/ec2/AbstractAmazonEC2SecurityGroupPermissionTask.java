@@ -25,6 +25,7 @@ import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
 
 import com.amazonaws.services.ec2.model.IpPermission;
+import com.amazonaws.services.ec2.model.IpRange;
 
 import groovy.lang.GString;
 
@@ -50,7 +51,7 @@ abstract class AbstractAmazonEC2SecurityGroupPermissionTask extends ConventionTa
 				// "tcp/22:10.0.0.2/32,10.0.0.5/32"
 				
 				String expression = it.toString();
-				if (expression.contains(":") == false) {
+				if (!expression.contains(":")) {
 					throw new ParseException(expression);
 				}
 				
@@ -65,7 +66,7 @@ abstract class AbstractAmazonEC2SecurityGroupPermissionTask extends ConventionTa
 				if ("icmp".equalsIgnoreCase(protocolAndPortExpression)) {
 					protocol = protocolAndPortExpression;
 					fromPort = toPort = -1;
-				} else if (protocolAndPortExpression.contains("/") == false) {
+				} else if (!protocolAndPortExpression.contains("/")) {
 					protocol = protocolAndPortExpression;
 					fromPort = 0;
 					toPort = 65535;
@@ -88,7 +89,7 @@ abstract class AbstractAmazonEC2SecurityGroupPermissionTask extends ConventionTa
 					.withIpProtocol(protocol)
 					.withFromPort(fromPort)
 					.withToPort(toPort)
-					.withIpRanges(ranges);
+					.withIpv4Ranges((IpRange) ranges);
 			} else {
 				throw new GradleException("ipPermission type only supports IpPermission or String: " + it.getClass());
 			}
