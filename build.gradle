@@ -24,7 +24,7 @@ plugins {
   id 'eclipse'
   id 'idea'
   id 'jacoco'
-  id 'maven'
+  //id 'maven'
   id 'maven-publish'
 
   id 'checkstyle'
@@ -65,6 +65,7 @@ compileJava {
 }
 
 // maven
+/*
 uploadArchives {
   repositories {
     mavenDeployer {
@@ -72,6 +73,7 @@ uploadArchives {
     }
   }
 }
+ */
 
 // jacoco
 jacocoTestReport {

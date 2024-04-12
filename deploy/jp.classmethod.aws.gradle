@@ -1,6 +1,6 @@
-apply plugin: 'maven'
+//apply plugin: 'maven'
 apply plugin: 'maven-publish'
-apply plugin: 'com.jfrog.bintray'
+//apply plugin: 'com.jfrog.bintray'
 
 publishing {
 	publications {
@@ -18,6 +18,8 @@ publishing {
 	}
 }
 
+/*
+This will not work now we have migrated to maven-publish
 if (project.hasProperty('awsAccessKey') && project.hasProperty('awsSecretKey')) {
 	uploadArchives {
 		repositories {
@@ -53,7 +55,8 @@ if (project.hasProperty('awsAccessKey') && project.hasProperty('awsSecretKey')) 
 	}
 }
 
-
+/*
+bintray is no longer supported
 if (project.hasProperty('bintrayUser') && project.hasProperty('bintrayApiKey')) {
 	bintray {
 		user = bintrayUser
@@ -73,6 +76,7 @@ if (project.hasProperty('bintrayUser') && project.hasProperty('bintrayApiKey')) 
 		}
 	}
 }
+ */
 
 pluginBundle {
 	website = 'https://github.com/classmethod-aws/gradle-aws-plugin'
