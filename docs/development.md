@@ -5,7 +5,11 @@ to a maven repository.
 
 ### Current status
 
-Running under gradle 5.6.4.
+Running under gradle 8.7. JDK 11.
+Uses AWS SDK for Java version 1 which supports up to JDK 16.
+Need a rewrite under AWS SDK for Java version 2 if we want support for Java 17.
+Java 11 support ended Sept 2023. Extended support until Jan 32.
+Next LTS versions are 17, 21, 23, 25.
 
 ### Using plugin locally from another project
 
