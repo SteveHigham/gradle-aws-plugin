@@ -23,6 +23,9 @@ import lombok.Setter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.opsworkscm.AWSOpsWorksCM;
@@ -41,73 +44,99 @@ public class AwsOpsWorksCmCreateServerTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private String backupId;
 	
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private Integer backupRetentionCount;
 	
 	@Getter
 	@Setter
+	@Input
 	private Boolean disableAutomatedBackup = true;
 	
 	@Getter
 	@Setter
+	@Input
 	private String engine = "Chef";
 	
 	@Getter
 	@Setter
+	@Input
 	private Collection<EngineAttribute> engineAttributes =
-			new ArrayList<EngineAttribute>();
+			new ArrayList<>();
 	
 	@Getter
 	@Setter
+	@Input
 	private String engineModel = "Single";
 	
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private String engineVersion;
 	
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private String instanceProfileArn;
 	
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private String instanceType;
 	
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private String keyPair;
 	
 	@Getter
 	@Setter
+	@Internal
 	private String preferredBackupWindow;
 	
 	@Getter
 	@Setter
+	@Internal
 	private String preferredMaintenanceWindow;
 	
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private String serverName;
 	
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private String serviceRoleArn;
 	
 	@Getter
 	@Setter
-	private Collection<String> subnetIds = new ArrayList<String>();
+	@Input
+	private Collection<String> subnetIds = new ArrayList<>();
 	
 	/**
 	* For testing (stubbing)
 	*/
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private AWSOpsWorksCM client;
 	
 	@Getter
+	@Internal
 	private Server server;
 	
 	

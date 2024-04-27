@@ -18,6 +18,7 @@ package jp.classmethod.aws.gradle.cloudformation;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import lombok.Getter;
@@ -25,7 +26,7 @@ import lombok.Setter;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
-import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.*;
 
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 
@@ -33,13 +34,16 @@ import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 @Getter
 public class AmazonCloudFormationValidateTemplateFileTask extends ConventionTask {
 	
+	@InputFile
 	private File cfnTemplateFile;
 	
+	@Input
 	private String region;
 	
 	/**
 	* For testing (stubbing)
 	*/
+	@Internal
 	AmazonCloudFormation client;
 	
 	
@@ -71,7 +75,7 @@ public class AmazonCloudFormationValidateTemplateFileTask extends ConventionTask
 		
 		AmazonCloudFormationPluginExtension ext =
 				getProject().getExtensions().getByType(AmazonCloudFormationPluginExtension.class);
-		if (region != null && region.length() > 0) {
+		if (region != null && !region.isEmpty()) {
 			ext.setRegion(region);
 		}
 		
@@ -81,7 +85,7 @@ public class AmazonCloudFormationValidateTemplateFileTask extends ConventionTask
 	}
 	
 	private boolean isValidTemplateFile(AmazonCloudFormationPluginExtension ext, File templateFile) throws IOException {
-		Charset chars = Charset.forName("UTF-8");
+		Charset chars = StandardCharsets.UTF_8;
 		String body = new String(Files.readAllBytes(templateFile.toPath()),
 				chars);
 		return ext.isValidTemplateBody(body);

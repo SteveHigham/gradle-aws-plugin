@@ -25,6 +25,8 @@ import lombok.Setter;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
@@ -36,17 +38,24 @@ import com.amazonaws.services.cloudformation.model.DescribeStacksResult;
 import com.amazonaws.services.cloudformation.model.Stack;
 import com.amazonaws.services.cloudformation.model.StackEvent;
 
-@Setter
-@Getter
 public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 	
+	@Input
+	@Getter
+	@Setter
 	private String stackName;
 	
+	@Input
+	@Getter
+	@Setter
 	private List<String> successStatuses = Arrays.asList(
 			"CREATE_COMPLETE",
 			"UPDATE_COMPLETE",
 			"DELETE_COMPLETE");
 	
+	@Input
+	@Getter
+	@Setter
 	private List<String> waitStatuses = Arrays.asList(
 			"CREATE_IN_PROGRESS",
 			"ROLLBACK_IN_PROGRESS",
@@ -56,19 +65,32 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 			"UPDATE_ROLLBACK_IN_PROGRESS",
 			"UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS");
 	
+	@Getter
+	@Setter
+	@Internal
 	private int loopTimeout = 900; // sec
 	
+	@Getter
+	@Setter
+	@Internal
 	private int loopWait = 10; // sec
 	
+	@Getter
+	@Internal
 	private String lastStatus;
 	
 	private List<String> printedEvents;
 	
+	@Getter
+	@Internal
 	private Stack stack;
 	
 	/**
 	* For testing (stubbing)
 	*/
+	@Getter
+	@Setter
+	@Input
 	AmazonCloudFormation client;
 	
 	
@@ -102,7 +124,7 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 		//String stackName = getStackName();
 		List<String> successStatuses = getSuccessStatuses();
 		long start = System.currentTimeMillis();
-		printedEvents = new LinkedList<String>();
+		printedEvents = new LinkedList<>();
 		
 		List<StackEvent> stackEvents = null;
 		while (true) {
@@ -160,7 +182,7 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 		// We generally get an exception here once the deletion has completed
 		DescribeStackEventsResult result =
 				client.describeStackEvents(request);
-		stackEvents = new LinkedList<StackEvent>(result.getStackEvents());
+		stackEvents = new LinkedList<>(result.getStackEvents());
 		Collections.reverse(stackEvents);
 		return stackEvents;
 	}
@@ -217,7 +239,7 @@ public class AmazonCloudFormationWaitStackStatusTask extends ConventionTask {
 			// Else if still going, sleep some then loop again
 		} else if (waitStatuses.contains(lastStatus)) {
 			getLogger().debug("Status of stack {} is {}...", stackName, lastStatus);
-			Thread.sleep(loopWait * 1000);
+			Thread.sleep(loopWait * 1000L);
 			
 			// Else, it must have failed, so get out of while loop
 		} else {

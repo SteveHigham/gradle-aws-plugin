@@ -29,7 +29,7 @@ import org.gradle.api.file.EmptyFileVisitor;
 import org.gradle.api.file.FileVisitDetails;
 import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.logging.Logger;
-import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.*;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
@@ -55,32 +55,43 @@ public class SyncTask extends ConventionTask {
 	
 	
 	@Setter
+	@Input
 	private String bucketName;
 	
 	@Setter
+	@Input
 	private String prefix = "";
 	
 	@Setter
+	@InputFiles
 	private File source;
 	
 	@Setter
+	@Input
 	private boolean delete;
 	
 	@Setter
+	@Input
 	private int threads = 5;
 	
 	@Setter
+	@Input
 	private StorageClass storageClass = StorageClass.Standard;
 	
 	@Setter
+	@Input
+	@Optional
 	private Closure<ObjectMetadata> metadataProvider;
 	
+	@Internal
 	private CannedAccessControlList acl;
 	
 	/**git status
 	* Externally exposed client for stubbing
 	*/
 	@Setter
+	@Input
+	@Optional
 	private AmazonS3 client;
 	
 	
@@ -100,7 +111,7 @@ public class SyncTask extends ConventionTask {
 		checkUploadPrerequisites(bucketName, source);
 		
 		if (s3 == null) {
-			if (source.isDirectory() == false) {
+			if (!source.isDirectory()) {
 				throw new GradleException("source must be directory");
 			}
 			
@@ -155,7 +166,7 @@ public class SyncTask extends ConventionTask {
 		
 		s3.listObjects(bucketName, prefix).getObjectSummaries().forEach(os -> {
 			File f = getProject().file(pathPrefix + os.getKey().substring(prefix.length()));
-			if (f.exists() == false) {
+			if (!f.exists()) {
 				getLogger().info("deleting... s3://{}/{}", bucketName, os.getKey());
 				s3.deleteObject(bucketName, os.getKey());
 			}
@@ -205,13 +216,13 @@ public class SyncTask extends ConventionTask {
 		public void run() {
 			// to enable conventionMappings feature
 			
-			String relativePath = prefix + element.getRelativePath().toString();
+			String relativePath = prefix + element.getRelativePath();
 			String key = relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;
 			
 			boolean doUpload = false;
 			try {
 				ObjectMetadata metadata = s3.getObjectMetadata(bucketName, key);
-				if (metadata.getETag().equalsIgnoreCase(md5(element.getFile())) == false) {
+				if (!metadata.getETag().equalsIgnoreCase(md5(element.getFile()))) {
 					doUpload = true;
 				}
 			} catch (AmazonS3Exception e) {

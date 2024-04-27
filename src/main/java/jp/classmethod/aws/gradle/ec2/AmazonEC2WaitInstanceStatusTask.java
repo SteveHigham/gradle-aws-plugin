@@ -25,6 +25,9 @@ import lombok.Setter;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
@@ -38,18 +41,23 @@ import com.amazonaws.services.ec2.model.Instance;
 public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 	
 	@Setter
+	@Input
+	@Optional
 	private String instanceId;
 	
 	@Setter
+	@Input
 	private Collection<Filter> filters = new ArrayList<>();
 	
 	@Setter
+	@Input
 	private List<String> successStatuses = Arrays.asList(
 			"running",
 			"stopped",
 			"terminated");
 	
 	@Setter
+	@Input
 	private List<String> waitStatuses = Arrays.asList(
 			"pending",
 			"shutting-down",
@@ -57,19 +65,25 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 			"not found");
 	
 	@Setter
+	@Internal
 	private int loopTimeout = 900; // sec
 	
 	@Setter
+	@Internal
 	private int loopWait = 10; // sec
 	
 	/**
 	* For testing (stubbing)
 	*/
 	@Setter
+	@Input
+	@Optional
 	private AmazonEC2 client;
 	
+	@Internal
 	private Instance instance;
 	
+	@Internal
 	private String lastStatus;
 	
 	
@@ -79,7 +93,7 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 	}
 	
 	public void addFilter(String name, String value) {
-		List<String> values = new ArrayList<String>();
+		List<String> values = new ArrayList<>();
 		values.add(value);
 		addFilter(name, values);
 	}
@@ -102,7 +116,7 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 		
 		long start = System.currentTimeMillis();
 		while (true) {
-			if (System.currentTimeMillis() > start + (loopTimeout * 1000)) {
+			if (System.currentTimeMillis() > start + (loopTimeout * 1000L)) {
 				throw new GradleException("Timeout");
 			}
 			checkCurrentStatus(ec2);
@@ -110,7 +124,7 @@ public class AmazonEC2WaitInstanceStatusTask extends ConventionTask { // NOPMD
 				break;
 			}
 			try {
-				Thread.sleep(loopWait * 1000);
+				Thread.sleep(loopWait * 1000L);
 			} catch (InterruptedException e) {
 				throw new GradleException("Sleep interrupted", e);
 			}

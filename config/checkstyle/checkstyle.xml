@@ -33,7 +33,9 @@
     <module name="ParameterName"/>
     <module name="StaticVariableName"/>
     <module name="TypeName"/>
-    <module name="AvoidStarImport"/>
+    <module name="AvoidStarImport">
+      <property name="allowClassImports" value="true"/>
+    </module>
     <module name="RedundantImport"/>
     <!-- Javadocのためのimportを除外できない
     <module name="UnusedImports">

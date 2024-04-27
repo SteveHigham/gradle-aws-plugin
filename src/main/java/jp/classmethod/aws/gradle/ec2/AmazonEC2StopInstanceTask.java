@@ -22,6 +22,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.ec2.AmazonEC2;
@@ -32,9 +35,11 @@ public class AmazonEC2StopInstanceTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	@Input
 	private List<String> instanceIds = new ArrayList<>();
 	
 	@Getter
+	@Internal
 	private StopInstancesResult stopInstancesResult;
 	
 	/**
@@ -42,6 +47,8 @@ public class AmazonEC2StopInstanceTask extends ConventionTask {
 	*/
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private AmazonEC2 client;
 	
 	

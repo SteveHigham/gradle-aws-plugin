@@ -20,6 +20,7 @@ import lombok.Setter;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
@@ -29,6 +30,7 @@ public class AmazonCloudFormationDeleteStackTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	@Input
 	private String stackName;
 	
 	/**
@@ -36,7 +38,8 @@ public class AmazonCloudFormationDeleteStackTask extends ConventionTask {
 	*/
 	@Getter
 	@Setter
-	AmazonCloudFormation client;
+	@Input
+	private AmazonCloudFormation client;
 	
 	
 	public AmazonCloudFormationDeleteStackTask() {

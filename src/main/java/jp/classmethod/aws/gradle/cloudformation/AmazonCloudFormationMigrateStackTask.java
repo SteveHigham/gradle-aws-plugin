@@ -27,6 +27,9 @@ import lombok.Setter;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.AmazonServiceException;
@@ -48,50 +51,68 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private String region;
 	
 	@Getter
 	@Setter
+	@Input
 	private String stackName;
 	
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private String cfnTemplateUrl;
 	
 	@Getter
 	@Setter
+	@InputFile
 	private File cfnTemplateFile;
 	
 	@Getter
 	@Setter
+	@Input
 	private List<Parameter> cfnStackParams = new ArrayList<>();
 	
 	@Getter
 	@Setter
+	@Input
 	private List<Tag> cfnStackTags = new ArrayList<>();
 	
 	@Getter
 	@Setter
+	@Input
 	private boolean capabilityIam;
 	
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private Capability useCapabilityIam;
 	
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private String cfnStackPolicyUrl;
 	
 	@Getter
 	@Setter
+	@InputFile
+	@Optional
 	private File cfnStackPolicyFile;
 	
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private String cfnOnFailure;
 	
 	@Getter
 	@Setter
+	@Input
 	private List<String> stableStatuses = Arrays.asList(
 			"CREATE_COMPLETE", "ROLLBACK_COMPLETE", "UPDATE_COMPLETE", "UPDATE_ROLLBACK_COMPLETE");
 	
@@ -100,6 +121,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	*/
 	@Getter
 	@Setter
+	@Input
 	AmazonCloudFormation client;
 	
 	
@@ -151,7 +173,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			.withTags(cfnStackTags);
 		
 		// If template URL is specified, then use it
-		if (Strings.isNullOrEmpty(cfnTemplateUrl) == false) {
+		if (!Strings.isNullOrEmpty(cfnTemplateUrl)) {
 			req.setTemplateURL(cfnTemplateUrl);
 			getLogger().info("Using template url: {}", cfnTemplateUrl);
 			// Else, use the template file body
@@ -170,7 +192,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		}
 		
 		// If stack policy is specified, then use it
-		if (Strings.isNullOrEmpty(cfnStackPolicyUrl) == false) {
+		if (!Strings.isNullOrEmpty(cfnStackPolicyUrl)) {
 			req.setStackPolicyURL(cfnStackPolicyUrl);
 			// Else, use the stack policy file body if present
 		} else if (cfnStackPolicyFile != null) {
@@ -220,7 +242,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 			.withOnFailure(cfnOnFailure);
 		
 		// If template URL is specified, then use it
-		if (Strings.isNullOrEmpty(cfnTemplateUrl) == false) {
+		if (!Strings.isNullOrEmpty(cfnTemplateUrl)) {
 			req.setTemplateURL(cfnTemplateUrl);
 			// Else, use the template file body
 		} else {
@@ -234,7 +256,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		}
 		
 		// If stack policy is specified, then use it
-		if (Strings.isNullOrEmpty(cfnStackPolicyUrl) == false) {
+		if (!Strings.isNullOrEmpty(cfnStackPolicyUrl)) {
 			req.setStackPolicyURL(cfnStackPolicyUrl);
 			// Else, use the stack policy file body
 		} else if (cfnStackPolicyFile != null) {
@@ -254,7 +276,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 		AmazonCloudFormationPluginExtension ext =
 				getProject().getExtensions()
 					.getByType(AmazonCloudFormationPluginExtension.class);
-		if (region != null && region.length() > 0) {
+		if (region != null && !region.isEmpty()) {
 			ext.setRegion(region);
 		}
 		return ext.getClient();

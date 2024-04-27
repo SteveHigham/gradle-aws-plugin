@@ -24,6 +24,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.ec2.AmazonEC2;
@@ -36,6 +39,7 @@ public class AmazonEC2DescribeInstancesTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	@Input
 	private List<String> instanceIds = new ArrayList<>();
 	
 	/**
@@ -43,12 +47,16 @@ public class AmazonEC2DescribeInstancesTask extends ConventionTask {
 	*/
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	private AmazonEC2 client;
 	
 	@Getter
+	@Internal
 	private DescribeInstancesResult describeInstancesResult;
 	
 	@Getter
+	@Internal
 	private Map<String, Instance> instances = new HashMap<>();
 	
 	
