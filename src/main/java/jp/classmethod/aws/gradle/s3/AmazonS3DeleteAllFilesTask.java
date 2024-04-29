@@ -22,6 +22,7 @@ import lombok.Setter;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -31,10 +32,17 @@ public class AmazonS3DeleteAllFilesTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	@Input
+	private String region;
+	
+	@Getter
+	@Setter
+	@Input
 	public String bucketName;
 	
 	@Getter
 	@Setter
+	@Input
 	public String prefix = "";
 	
 	

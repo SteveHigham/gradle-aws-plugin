@@ -19,6 +19,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
@@ -29,9 +32,11 @@ public class AmazonCloudFormationGetStatusTask extends ConventionTask {
 	
 	@Getter
 	@Setter
+	@Input
 	private String cfnStackName;
 	
 	@Getter
+	@Internal
 	private DescribeStacksResult statusResult;
 	
 	/**
@@ -39,6 +44,8 @@ public class AmazonCloudFormationGetStatusTask extends ConventionTask {
 	*/
 	@Getter
 	@Setter
+	@Input
+	@Optional
 	AmazonCloudFormation client;
 	
 	

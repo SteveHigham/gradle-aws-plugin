@@ -122,6 +122,7 @@ public class AmazonCloudFormationMigrateStackTask extends ConventionTask {
 	@Getter
 	@Setter
 	@Input
+	@Optional
 	AmazonCloudFormation client;
 	
 	

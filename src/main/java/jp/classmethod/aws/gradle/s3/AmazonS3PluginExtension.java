@@ -34,7 +34,7 @@ public class AmazonS3PluginExtension extends BaseRegionAwarePluginExtension<Amaz
 	private Integer maxErrorRetry = -1;
 	
 	@Setter
-	private boolean regionRequired = false;
+	private boolean regionRequired = true;
 	
 	
 	public AmazonS3PluginExtension(Project project) {

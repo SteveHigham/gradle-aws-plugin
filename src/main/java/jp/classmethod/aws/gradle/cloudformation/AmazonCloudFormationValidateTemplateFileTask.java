@@ -38,6 +38,7 @@ public class AmazonCloudFormationValidateTemplateFileTask extends ConventionTask
 	private File cfnTemplateFile;
 	
 	@Input
+	@Optional
 	private String region;
 	
 	/**
